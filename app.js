@@ -10,8 +10,12 @@ const FEEDS = {
     }
 };
 
-// CORS Proxy for fetching RSS feeds
-const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+// Multiple CORS Proxies for fallback
+const CORS_PROXIES = [
+    'https://api.allorigins.win/raw?url=',
+    'https://corsproxy.io/?',
+    'https://api.codetabs.com/v1/proxy?quest='
+];
 
 // State
 let currentFeed = null;
@@ -114,21 +118,45 @@ function showPodcastPage() {
     podcastPage.classList.add('active');
 }
 
+// Fetch with fallback proxies
+async function fetchWithFallback(url) {
+    let lastError;
+    
+    for (const proxy of CORS_PROXIES) {
+        try {
+            const response = await fetch(proxy + encodeURIComponent(url), {
+                headers: {
+                    'Accept': 'application/xml, text/xml, */*'
+                }
+            });
+            
+            if (response.ok) {
+                return await response.text();
+            }
+        } catch (error) {
+            lastError = error;
+            console.warn(`Proxy ${proxy} failed, trying next...`);
+        }
+    }
+    
+    throw lastError || new Error('All proxies failed');
+}
+
 // Load Podcast Feed
 async function loadPodcast(feedId) {
     showLoading(true);
     
     try {
         const feed = FEEDS[feedId];
-        const response = await fetch(CORS_PROXY + encodeURIComponent(feed.url));
-        
-        if (!response.ok) {
-            throw new Error('Failed to fetch feed');
-        }
-        
-        const xmlText = await response.text();
+        const xmlText = await fetchWithFallback(feed.url);
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+        
+        // Check for parsing errors
+        const parseError = xmlDoc.querySelector('parsererror');
+        if (parseError) {
+            throw new Error('Failed to parse feed XML');
+        }
         
         // Parse feed data
         const channel = xmlDoc.querySelector('channel');

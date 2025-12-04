@@ -165,6 +165,12 @@ async function loadPodcast(feedId) {
         const image = channel.querySelector('itunes\\:image, image url')?.getAttribute('href') || 
                       channel.querySelector('image url')?.textContent || '';
         
+        // Parse external links
+        const fundingEl = channel.querySelector('podcast\\:funding');
+        const fundingUrl = fundingEl?.getAttribute('url') || '';
+        const fundingText = fundingEl?.textContent || 'Support';
+        const podcastLink = getTextContent(channel, 'link');
+        
         // Parse episodes
         const items = channel.querySelectorAll('item');
         currentEpisodes = Array.from(items).map((item, index) => ({
@@ -182,7 +188,10 @@ async function loadPodcast(feedId) {
             title,
             description,
             image,
-            name: feed.name
+            name: feed.name,
+            fundingUrl,
+            fundingText,
+            podcastLink
         };
         
         // Update UI
@@ -190,6 +199,9 @@ async function loadPodcast(feedId) {
         podcastTitle.textContent = title;
         podcastDescription.textContent = description;
         episodeCount.textContent = `${currentEpisodes.length} episodes`;
+        
+        // Render external links
+        renderExternalLinks();
         
         renderEpisodes();
         showPodcastPage();
@@ -200,6 +212,40 @@ async function loadPodcast(feedId) {
     } finally {
         showLoading(false);
     }
+}
+
+// Render External Links
+function renderExternalLinks() {
+    const container = document.getElementById('external-links');
+    if (!container || !currentFeed) return;
+    
+    let html = '';
+    
+    // Support/PayPal button
+    if (currentFeed.fundingUrl) {
+        html += `
+            <a href="${currentFeed.fundingUrl}" target="_blank" rel="noopener noreferrer" class="external-link-btn support-btn">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                    <path fill="currentColor" d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>
+                </svg>
+                ${currentFeed.fundingText}
+            </a>
+        `;
+    }
+    
+    // RSS.com podcast page
+    if (currentFeed.podcastLink) {
+        html += `
+            <a href="${currentFeed.podcastLink}" target="_blank" rel="noopener noreferrer" class="external-link-btn podcast-page-btn">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                    <path fill="currentColor" d="M6.18,15.64A2.18,2.18 0 0,1 8.36,17.82C8.36,19 7.38,20 6.18,20C5,20 4,19 4,17.82A2.18,2.18 0 0,1 6.18,15.64M4,4.44A15.56,15.56 0 0,1 19.56,20H16.73A12.73,12.73 0 0,0 4,7.27V4.44M4,10.1A9.9,9.9 0 0,1 13.9,20H11.07A7.07,7.07 0 0,0 4,12.93V10.1Z"/>
+                </svg>
+                View on RSS.com
+            </a>
+        `;
+    }
+    
+    container.innerHTML = html;
 }
 
 // Render Episodes List

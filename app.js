@@ -11,7 +11,8 @@ const FEEDS = {
 };
 
 // Server API endpoint (primary) with CORS proxy fallbacks
-const USE_SERVER_PROXY = true;
+// Disabled server proxy - using external proxies for now
+const USE_SERVER_PROXY = false;
 const CORS_PROXIES = [
     'https://api.allorigins.win/raw?url=',
     'https://corsproxy.io/?',

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DJ Lee Romang - Club Vibez</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Landing Page - Podcast Selection -->
+    <div id="landing-page" class="page active">
+        <div class="landing-container">
+            <header class="landing-header">
+                <h1 class="dj-name">DJ Lee Romang</h1>
+                <p class="tagline">House & Tech House Mixes</p>
+            </header>
+            
+            <div class="podcast-selection">
+                <h2>Select a Podcast</h2>
+                <div class="podcast-cards">
+                    <div class="podcast-card" data-feed="gym-mix">
+                        <div class="card-image">
+                            <img src="https://media.rss.com/club-vibez-mini-mix/20250823_070858_981e93ab8050dc56a8e4c508a932998b.jpg" alt="Club Vibez Gym Mix">
+                            <div class="card-overlay">
+                                <span class="play-icon">▶</span>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <h3>Club Vibez Gym Mix</h3>
+                            <p>30 min workout mixes - No talk, just tunes!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="podcast-card" data-feed="club-vibez">
+                        <div class="card-image">
+                            <img src="https://media.rss.com/club-vibez/20251004_121037_0ed83f5052afff829bf8e4bd036bb699.png" alt="Club Vibez">
+                            <div class="card-overlay">
+                                <span class="play-icon">▶</span>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <h3>Club Vibez</h3>
+                            <p>2 hours of the hottest underground dance music</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <footer class="landing-footer">
+                <div class="social-links">
+                    <a href="https://linktr.ee/djleeromang" target="_blank" rel="noopener">Linktree</a>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Podcast Page -->
+    <div id="podcast-page" class="page">
+        <div class="podcast-container">
+            <button class="back-btn" id="back-btn">
+                <span>←</span> Back
+            </button>
+            
+            <div class="podcast-header">
+                <div class="podcast-cover">
+                    <img id="podcast-cover-img" src="" alt="Podcast Cover">
+                </div>
+                <div class="podcast-info">
+                    <h1 id="podcast-title"></h1>
+                    <p id="podcast-description"></p>
+                    <div class="podcast-meta">
+                        <span id="episode-count"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="episodes-section">
+                <h2>Episodes</h2>
+                <div id="episodes-list" class="episodes-list">
+                    <!-- Episodes will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Player -->
+    <div id="audio-player" class="audio-player hidden">
+        <div class="player-container">
+            <div class="player-info">
+                <img id="player-cover" src="" alt="Episode Cover">
+                <div class="player-details">
+                    <h4 id="player-title"></h4>
+                    <p id="player-podcast"></p>
+                </div>
+            </div>
+            
+            <div class="player-controls">
+                <div class="progress-container">
+                    <span id="current-time">0:00</span>
+                    <input type="range" id="progress-bar" class="progress-bar" value="0" min="0" max="100">
+                    <span id="duration">0:00</span>
+                </div>
+                <div class="control-buttons">
+                    <button id="rewind-btn" class="control-btn" title="Rewind 15s">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="currentColor" d="M12.5 3C17.15 3 21.08 6.03 22.47 10.22L20.1 11C19.05 7.81 16.04 5.5 12.5 5.5C10.54 5.5 8.77 6.22 7.38 7.38L10 10H3V3L5.6 5.6C7.45 4 9.85 3 12.5 3M10 12V22H8V14H6V12H10M18 14V20C18 21.11 17.11 22 16 22H14C12.9 22 12 21.1 12 20V14C12 12.9 12.9 12 14 12H16C17.11 12 18 12.9 18 14M14 14V20H16V14H14Z"/>
+                        </svg>
+                    </button>
+                    <button id="play-pause-btn" class="control-btn play-btn">
+                        <span class="play-icon">▶</span>
+                        <span class="pause-icon hidden">❚❚</span>
+                    </button>
+                    <button id="forward-btn" class="control-btn" title="Forward 15s">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="currentColor" d="M11.5 3C6.85 3 2.92 6.03 1.53 10.22L3.9 11C4.95 7.81 7.96 5.5 11.5 5.5C13.46 5.5 15.23 6.22 16.62 7.38L14 10H21V3L18.4 5.6C16.55 4 14.15 3 11.5 3M10 12V22H8V14H6V12H10M18 14V20C18 21.11 17.11 22 16 22H14C12.9 22 12 21.1 12 20V14C12 12.9 12.9 12 14 12H16C17.11 12 18 12.9 18 14M14 14V20H16V14H14Z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="volume-control">
+                <button id="volume-btn" class="control-btn">
+                    <svg viewBox="0 0 24 24" width="24" height="24" id="volume-icon">
+                        <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
+                    </svg>
+                </button>
+                <input type="range" id="volume-slider" class="volume-slider" value="80" min="0" max="100">
+            </div>
+            
+            <button id="close-player" class="close-player">×</button>
+        </div>
+        
+        <audio id="audio-element"></audio>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

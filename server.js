@@ -1,8 +1,18 @@
 const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
 const PORT = process.env.PORT || 3000;
+
+// Feed cache (10 minute TTL)
+const feedCache = new Map();
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+const ALLOWED_FEEDS = {
+    'gym-mix': 'https://media.rss.com/club-vibez-mini-mix/feed.xml',
+    'club-vibez': 'https://media.rss.com/club-vibez/feed.xml'
+};
 
 const MIME_TYPES = {
     '.html': 'text/html',
@@ -15,17 +25,83 @@ const MIME_TYPES = {
     '.gif': 'image/gif',
     '.svg': 'image/svg+xml',
     '.ico': 'image/x-icon',
+    '.webp': 'image/webp',
     '.woff': 'font/woff',
     '.woff2': 'font/woff2',
     '.ttf': 'font/ttf',
     '.eot': 'application/vnd.ms-fontobject'
 };
 
+// Fetch feed with caching
+function fetchFeed(feedId, callback) {
+    const url = ALLOWED_FEEDS[feedId];
+    if (!url) {
+        callback(new Error('Invalid feed ID'));
+        return;
+    }
+
+    // Check cache
+    const cached = feedCache.get(feedId);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        console.log(`Serving cached feed: ${feedId}`);
+        callback(null, cached.data);
+        return;
+    }
+
+    console.log(`Fetching fresh feed: ${feedId}`);
+    
+    https.get(url, (response) => {
+        let data = '';
+        
+        response.on('data', chunk => {
+            data += chunk;
+        });
+        
+        response.on('end', () => {
+            // Cache the response
+            feedCache.set(feedId, {
+                data: data,
+                timestamp: Date.now()
+            });
+            callback(null, data);
+        });
+    }).on('error', (err) => {
+        // If cached version exists, return it even if expired
+        if (cached) {
+            console.log(`Feed fetch failed, using stale cache: ${feedId}`);
+            callback(null, cached.data);
+        } else {
+            callback(err);
+        }
+    });
+}
+
 const server = http.createServer((req, res) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
     
-    // Parse URL and remove query string
-    let filePath = req.url.split('?')[0];
+    // Parse URL
+    const urlParts = req.url.split('?');
+    let filePath = urlParts[0];
+    
+    // Handle feed API endpoint
+    if (filePath.startsWith('/api/feed/')) {
+        const feedId = filePath.replace('/api/feed/', '');
+        
+        fetchFeed(feedId, (err, data) => {
+            if (err) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: err.message }));
+            } else {
+                res.writeHead(200, { 
+                    'Content-Type': 'application/xml',
+                    'Cache-Control': 'public, max-age=600',
+                    'Access-Control-Allow-Origin': '*'
+                });
+                res.end(data);
+            }
+        });
+        return;
+    }
     
     // Default to index.html
     if (filePath === '/') {

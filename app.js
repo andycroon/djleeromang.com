@@ -10,7 +10,8 @@ const FEEDS = {
     }
 };
 
-// Multiple CORS Proxies for fallback
+// Server API endpoint (primary) with CORS proxy fallbacks
+const USE_SERVER_PROXY = true;
 const CORS_PROXIES = [
     'https://api.allorigins.win/raw?url=',
     'https://corsproxy.io/?',
@@ -118,19 +119,35 @@ function showPodcastPage() {
     podcastPage.classList.add('active');
 }
 
-// Fetch with fallback proxies
-async function fetchWithFallback(url) {
+// Fetch feed - try server first, then external proxies
+async function fetchFeed(feedId) {
+    // Try server API first (faster due to caching)
+    if (USE_SERVER_PROXY) {
+        try {
+            const response = await fetch(`/api/feed/${feedId}`);
+            if (response.ok) {
+                console.log('Feed loaded from server cache');
+                return await response.text();
+            }
+        } catch (error) {
+            console.warn('Server proxy failed, trying external proxies...');
+        }
+    }
+    
+    // Fallback to external CORS proxies
+    const feed = FEEDS[feedId];
     let lastError;
     
     for (const proxy of CORS_PROXIES) {
         try {
-            const response = await fetch(proxy + encodeURIComponent(url), {
+            const response = await fetch(proxy + encodeURIComponent(feed.url), {
                 headers: {
                     'Accept': 'application/xml, text/xml, */*'
                 }
             });
             
             if (response.ok) {
+                console.log(`Feed loaded via proxy: ${proxy}`);
                 return await response.text();
             }
         } catch (error) {
@@ -148,7 +165,7 @@ async function loadPodcast(feedId) {
     
     try {
         const feed = FEEDS[feedId];
-        const xmlText = await fetchWithFallback(feed.url);
+        const xmlText = await fetchFeed(feedId);
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
         
@@ -171,9 +188,11 @@ async function loadPodcast(feedId) {
         const fundingText = fundingEl?.textContent || 'Support';
         const podcastLink = getTextContent(channel, 'link');
         
-        // Parse episodes
+        // Parse episodes (limit to 50 most recent for performance)
         const items = channel.querySelectorAll('item');
-        currentEpisodes = Array.from(items).map((item, index) => ({
+        const maxEpisodes = 50;
+        const itemsArray = Array.from(items).slice(0, maxEpisodes);
+        currentEpisodes = itemsArray.map((item, index) => ({
             index,
             title: getTextContent(item, 'title'),
             description: cleanDescription(getTextContent(item, 'description')),

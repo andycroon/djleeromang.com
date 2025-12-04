@@ -196,7 +196,7 @@ async function loadPodcast(feedId) {
         currentEpisodes = itemsArray.map((item, index) => ({
             index,
             title: getTextContent(item, 'title'),
-            description: cleanDescription(getTextContent(item, 'description')),
+            description: getFullDescription(getTextContent(item, 'description')),
             audioUrl: item.querySelector('enclosure')?.getAttribute('url') || '',
             duration: formatDuration(getTextContent(item, 'itunes\\:duration')),
             pubDate: formatDate(getTextContent(item, 'pubDate')),
@@ -272,22 +272,25 @@ function renderExternalLinks() {
 function renderEpisodes() {
     episodesList.innerHTML = currentEpisodes.map((episode, index) => `
         <div class="episode-item ${currentEpisodeIndex === index ? 'playing' : ''}" data-index="${index}">
-            <div class="episode-cover">
-                <img src="${episode.image}" alt="${episode.title}" loading="lazy">
+            <div class="episode-header">
+                <div class="episode-cover">
+                    <img src="${episode.image}" alt="${episode.title}" loading="lazy">
+                </div>
+                <div class="episode-info">
+                    <h3>${episode.title}</h3>
+                    <p class="episode-meta">
+                        <span>${episode.pubDate}</span>
+                        <span>${episode.duration}</span>
+                    </p>
+                </div>
+                <button class="episode-play-btn" data-index="${index}">
+                    ${currentEpisodeIndex === index && isPlaying ? 
+                        '<span class="pause-icon">❚❚</span>' : 
+                        '<span class="play-icon">▶</span>'
+                    }
+                </button>
             </div>
-            <div class="episode-info">
-                <h3>${episode.title}</h3>
-                <p>
-                    <span>${episode.pubDate}</span>
-                    <span>${episode.duration}</span>
-                </p>
-            </div>
-            <button class="episode-play-btn" data-index="${index}">
-                ${currentEpisodeIndex === index && isPlaying ? 
-                    '<span class="pause-icon">❚❚</span>' : 
-                    '<span class="play-icon">▶</span>'
-                }
-            </button>
+            ${episode.description ? `<div class="episode-description">${episode.description}</div>` : ''}
         </div>
     `).join('');
     
@@ -435,16 +438,40 @@ function getTextContent(parent, selector) {
     return el ? el.textContent.trim() : '';
 }
 
-function cleanDescription(html) {
+function cleanDescription(html, maxLength = 300) {
     // Remove HTML tags and clean up the description
     const temp = document.createElement('div');
     temp.innerHTML = html;
     let text = temp.textContent || temp.innerText || '';
-    // Truncate if too long
-    if (text.length > 300) {
-        text = text.substring(0, 300) + '...';
+    // Truncate if too long (0 means no truncation)
+    if (maxLength > 0 && text.length > maxLength) {
+        text = text.substring(0, maxLength) + '...';
     }
     return text;
+}
+
+// Full description for episodes (no truncation, preserve line breaks)
+function getFullDescription(html) {
+    // Replace <br> tags with newlines
+    let text = html.replace(/<br\s*\/?>/gi, '\n');
+    // Replace </p> tags with newlines
+    text = text.replace(/<\/p>/gi, '\n\n');
+    // Replace common line break patterns
+    text = text.replace(/<\/div>/gi, '\n');
+    
+    // Remove remaining HTML tags
+    const temp = document.createElement('div');
+    temp.innerHTML = text;
+    text = temp.textContent || temp.innerText || '';
+    
+    // Format tracklist: Add newlines before full timestamps (HH:MM:SS or MM:SS followed by artist name)
+    // Match HH:MM:SS pattern followed by a space and text
+    text = text.replace(/(\d{1,2}:\d{2}:\d{2}\s+\w)/g, '\n$1');
+    
+    // Clean up multiple newlines
+    text = text.replace(/\n{3,}/g, '\n\n');
+    
+    return text.trim();
 }
 
 function formatDuration(duration) {

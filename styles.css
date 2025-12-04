@@ -364,6 +364,72 @@ body {
     color: #ff6b35;
 }
 
+/* Listen On Platforms */
+.links-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.listen-on-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.listen-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.platform-links {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.platform-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--background-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.platform-btn:hover {
+    transform: scale(1.1);
+    border-color: transparent;
+}
+
+.platform-btn.platform-apple:hover {
+    background: linear-gradient(135deg, #fa243c 0%, #8f52d1 100%);
+}
+
+.platform-btn.platform-spotify:hover {
+    background: #1db954;
+}
+
+.platform-btn.platform-amazon:hover {
+    background: #00a8e1;
+}
+
+.platform-btn.platform-deezer:hover {
+    background: linear-gradient(135deg, #ff0092 0%, #feec37 100%);
+}
+
+.platform-btn.platform-youtube:hover {
+    background: #ff0000;
+}
+
 .episodes-section h2 {
     font-size: 1.5rem;
     font-weight: 700;

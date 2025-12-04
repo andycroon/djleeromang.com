@@ -1,13 +1,36 @@
-// RSS Feed URLs
+// RSS Feed URLs with platform links
 const FEEDS = {
     'gym-mix': {
         url: 'https://media.rss.com/club-vibez-mini-mix/feed.xml',
-        name: 'Club Vibez Gym Mix'
+        name: 'Club Vibez Gym Mix',
+        platforms: {
+            apple: 'https://podcasts.apple.com/podcast/club-vibez-gym-mix-dj-lee-romang/id1779313632',
+            spotify: 'https://open.spotify.com/show/3rJLXGKNQQX3bpxRJN2Xaj',
+            amazon: 'https://music.amazon.com/podcasts/c3e24ee9-a35f-46f6-a8b9-ff0b52fad03f/club-vibez-gym-mix---dj-lee-romang',
+            deezer: 'https://www.deezer.com/show/1001122261',
+            youtube: 'https://www.youtube.com/playlist?list=PLiR6J-aKkc5FHaWzz_H_C4Fxs_07-yl8H'
+        }
     },
     'club-vibez': {
         url: 'https://media.rss.com/club-vibez/feed.xml',
-        name: 'Club Vibez'
+        name: 'Club Vibez',
+        platforms: {
+            apple: 'https://podcasts.apple.com/podcast/club-vibez-mixed-by-lee-romang/id1779313775',
+            spotify: 'https://open.spotify.com/show/47VOLqhPFbJAwFu1d4xz4T',
+            amazon: 'https://music.amazon.com/podcasts/eca8a730-2f4d-4ccc-86fd-2e87e26ec62a/club-vibez---mixed-by-lee-romang',
+            deezer: 'https://www.deezer.com/show/1001122521',
+            youtube: 'https://www.youtube.com/playlist?list=PLiR6J-aKkc5Fg5x4yw1M_u5p-9qzFXdGT'
+        }
     }
+};
+
+// Platform icons (SVG paths)
+const PLATFORM_ICONS = {
+    apple: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>',
+    spotify: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.348-1.435-5.304-1.76-8.785-.964-.335.077-.67-.133-.746-.469-.077-.335.132-.67.468-.746 3.809-.87 7.077-.496 9.713 1.115.293.18.386.563.207.857zm1.223-2.723c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.13-9.965-1.166-.413.125-.848-.106-.973-.517-.125-.413.108-.848.518-.973 3.632-1.102 8.147-.568 11.234 1.328.366.226.48.707.258 1.071zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.149-1.016-.128-1.166-.622-.148-.494.129-1.015.623-1.164 3.532-1.073 9.404-.866 13.115 1.337.445.264.59.838.327 1.282-.264.443-.838.59-1.282.325z"/></svg>',
+    amazon: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M15.93 17.09c-.18.16-.43.17-.63.06-.89-.74-1.05-1.08-1.54-1.79-1.47 1.5-2.51 1.95-4.42 1.95-2.25 0-4.01-1.39-4.01-4.17 0-2.18 1.17-3.64 2.86-4.38 1.46-.64 3.49-.76 5.04-.93v-.35c0-.65.05-1.41-.33-1.97-.33-.5-.97-.71-1.53-.71-1.04 0-1.97.54-2.2 1.65-.05.24-.22.47-.47.48l-2.6-.28c-.22-.05-.46-.22-.4-.54.6-3.15 3.45-4.1 6-4.1 1.3 0 3 .35 4.03 1.33C17.11 4.55 17 6.18 17 7.95v4.17c0 1.25.52 1.8 1.01 2.48.17.24.21.54 0 .71l-2.06 1.78h-.02zM14.5 10.31v-.6c-1.93 0-3.97.41-3.97 2.67 0 1.16.6 1.94 1.63 1.94 1.14 0 2.08-.91 2.34-1.9v-2.11z"/></svg>',
+    deezer: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M18.81 4.16v3.03H24V4.16zM6.27 8.38v3.027h5.189V8.38zm12.54 0v3.027H24V8.38zM6.27 12.566v3.027h5.189v-3.027zm6.271 0v3.027h5.19v-3.027zm6.27 0v3.027H24v-3.027zM0 16.752v3.027h5.19v-3.027zm6.27 0v3.027h5.189v-3.027zm6.271 0v3.027h5.19v-3.027zm6.27 0v3.027H24v-3.027z"/></svg>',
+    youtube: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"/></svg>'
 };
 
 // Multiple CORS Proxies for fallback
@@ -219,7 +242,16 @@ function renderExternalLinks() {
     const container = document.getElementById('external-links');
     if (!container || !currentFeed) return;
     
-    let html = '';
+    const feed = FEEDS[currentFeed.id];
+    const platformNames = {
+        apple: 'Apple Podcasts',
+        spotify: 'Spotify',
+        amazon: 'Amazon Music',
+        deezer: 'Deezer',
+        youtube: 'YouTube'
+    };
+    
+    let html = '<div class="links-row">';
     
     // Support/PayPal button
     if (currentFeed.fundingUrl) {
@@ -233,16 +265,23 @@ function renderExternalLinks() {
         `;
     }
     
-    // RSS.com podcast page
-    if (currentFeed.podcastLink) {
-        html += `
-            <a href="${currentFeed.podcastLink}" target="_blank" rel="noopener noreferrer" class="external-link-btn podcast-page-btn">
-                <svg viewBox="0 0 24 24" width="18" height="18">
-                    <path fill="currentColor" d="M6.18,15.64A2.18,2.18 0 0,1 8.36,17.82C8.36,19 7.38,20 6.18,20C5,20 4,19 4,17.82A2.18,2.18 0 0,1 6.18,15.64M4,4.44A15.56,15.56 0 0,1 19.56,20H16.73A12.73,12.73 0 0,0 4,7.27V4.44M4,10.1A9.9,9.9 0 0,1 13.9,20H11.07A7.07,7.07 0 0,0 4,12.93V10.1Z"/>
-                </svg>
-                View on RSS.com
-            </a>
-        `;
+    html += '</div>';
+    
+    // Listen on platforms section
+    if (feed && feed.platforms) {
+        html += '<div class="listen-on-section"><span class="listen-label">Listen on:</span><div class="platform-links">';
+        
+        for (const [platform, url] of Object.entries(feed.platforms)) {
+            if (url && PLATFORM_ICONS[platform]) {
+                html += `
+                    <a href="${url}" target="_blank" rel="noopener noreferrer" class="platform-btn platform-${platform}" title="${platformNames[platform] || platform}">
+                        ${PLATFORM_ICONS[platform]}
+                    </a>
+                `;
+            }
+        }
+        
+        html += '</div></div>';
     }
     
     container.innerHTML = html;

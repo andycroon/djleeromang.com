@@ -179,7 +179,7 @@ async function loadPodcast(feedId) {
         // Parse feed data
         const channel = xmlDoc.querySelector('channel');
         const title = getTextContent(channel, 'title');
-        const description = cleanDescription(getTextContent(channel, 'description'));
+        const description = getFullDescription(getTextContent(channel, 'description'));
         const image = channel.querySelector('itunes\\:image, image url')?.getAttribute('href') || 
                       channel.querySelector('image url')?.textContent || '';
         

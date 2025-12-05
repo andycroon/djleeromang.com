@@ -460,8 +460,11 @@ function cleanDescription(html, maxLength = 300) {
 
 // Full description for episodes (no truncation, preserve formatting)
 function getFullDescription(html) {
+    // Remove CDATA markers if present
+    let text = html.replace(/<!\[CDATA\[/gi, '').replace(/\]\]>/gi, '');
+    
     // Replace <br> tags with line break markers
-    let text = html.replace(/<br\s*\/?>/gi, '<br>');
+    text = text.replace(/<br\s*\/?>/gi, '<br>');
     
     // Replace </p> and </div> tags with line breaks
     text = text.replace(/<\/p>/gi, '<br><br>');
@@ -471,14 +474,21 @@ function getFullDescription(html) {
     text = text.replace(/<p[^>]*>/gi, '');
     text = text.replace(/<div[^>]*>/gi, '');
     
-    // Make links open in new tab and add styling class
-    text = text.replace(/<a\s/gi, '<a target="_blank" rel="noopener noreferrer" class="desc-link" ');
+    // Make links open in new tab and add styling class (if not already set)
+    text = text.replace(/<a\s+(?![^>]*target=)/gi, '<a target="_blank" rel="noopener noreferrer" class="desc-link" ');
+    // Add class to existing links
+    text = text.replace(/<a\s/gi, match => {
+        if (!match.includes('class=')) {
+            return '<a class="desc-link" ';
+        }
+        return match;
+    });
     
     // Keep bold tags
     // <strong> and <b> are already fine
     
-    // Remove any other HTML tags except allowed ones (a, strong, b, em, i, br)
-    const allowedTags = ['a', 'strong', 'b', 'em', 'i', 'br'];
+    // Remove any other HTML tags except allowed ones (a, strong, b, em, i, br, ol, ul, li)
+    const allowedTags = ['a', 'strong', 'b', 'em', 'i', 'br', 'ol', 'ul', 'li'];
     const tagRegex = /<\/?([a-z][a-z0-9]*)[^>]*>/gi;
     text = text.replace(tagRegex, (match, tagName) => {
         if (allowedTags.includes(tagName.toLowerCase())) {

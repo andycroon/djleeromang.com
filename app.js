@@ -179,7 +179,7 @@ async function loadPodcast(feedId) {
         // Parse feed data
         const channel = xmlDoc.querySelector('channel');
         const title = getTextContent(channel, 'title');
-        const description = getFullDescription(getTextContent(channel, 'description'));
+        const description = getFullDescription(getHTMLContent(channel, 'description'));
         const image = channel.querySelector('itunes\\:image, image url')?.getAttribute('href') || 
                       channel.querySelector('image url')?.textContent || '';
         
@@ -196,7 +196,7 @@ async function loadPodcast(feedId) {
         currentEpisodes = itemsArray.map((item, index) => ({
             index,
             title: getTextContent(item, 'title'),
-            description: getFullDescription(getTextContent(item, 'description')),
+            description: getFullDescription(getHTMLContent(item, 'description')),
             audioUrl: item.querySelector('enclosure')?.getAttribute('url') || '',
             duration: formatDuration(getTextContent(item, 'itunes\\:duration')),
             pubDate: formatDate(getTextContent(item, 'pubDate')),
@@ -439,6 +439,11 @@ function handleEpisodeEnd() {
 function getTextContent(parent, selector) {
     const el = parent.querySelector(selector);
     return el ? el.textContent.trim() : '';
+}
+
+function getHTMLContent(parent, selector) {
+    const el = parent.querySelector(selector);
+    return el ? el.innerHTML.trim() : '';
 }
 
 function cleanDescription(html, maxLength = 300) {

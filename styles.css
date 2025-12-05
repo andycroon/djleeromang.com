@@ -509,10 +509,42 @@ body {
     font-size: 0.85rem;
     line-height: 1.6;
     margin: 0;
-    white-space: pre-wrap;
     padding: 15px;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 10px;
+}
+
+/* Links in descriptions */
+.desc-link,
+.episode-description a,
+.podcast-info a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.desc-link:hover,
+.episode-description a:hover,
+.podcast-info a:hover {
+    color: #ff5c7c;
+    text-decoration: underline;
+}
+
+/* Bold text in descriptions */
+.episode-description strong,
+.episode-description b,
+.podcast-info strong,
+.podcast-info b {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Italic text */
+.episode-description em,
+.episode-description i,
+.podcast-info em,
+.podcast-info i {
+    font-style: italic;
 }
 
 .episode-play-btn {

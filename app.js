@@ -217,7 +217,7 @@ async function loadPodcast(feedId) {
         // Update UI
         podcastCoverImg.src = image;
         podcastTitle.textContent = title;
-        podcastDescription.textContent = description;
+        podcastDescription.innerHTML = description;
         episodeCount.textContent = `${currentEpisodes.length} episodes`;
         
         // Render external links
@@ -297,7 +297,10 @@ function renderEpisodes() {
     // Add click listeners to episode items
     document.querySelectorAll('.episode-item').forEach(item => {
         item.addEventListener('click', (e) => {
-            if (!e.target.closest('.episode-play-btn')) {
+            // Don't play if clicking on play button, link, or description area
+            if (!e.target.closest('.episode-play-btn') && 
+                !e.target.closest('a') && 
+                !e.target.closest('.episode-description')) {
                 const index = parseInt(item.dataset.index);
                 playEpisode(index);
             }
@@ -450,26 +453,44 @@ function cleanDescription(html, maxLength = 300) {
     return text;
 }
 
-// Full description for episodes (no truncation, preserve line breaks)
+// Full description for episodes (no truncation, preserve formatting)
 function getFullDescription(html) {
-    // Replace <br> tags with newlines
-    let text = html.replace(/<br\s*\/?>/gi, '\n');
-    // Replace </p> tags with newlines
-    text = text.replace(/<\/p>/gi, '\n\n');
-    // Replace common line break patterns
-    text = text.replace(/<\/div>/gi, '\n');
+    // Replace <br> tags with line break markers
+    let text = html.replace(/<br\s*\/?>/gi, '<br>');
     
-    // Remove remaining HTML tags
-    const temp = document.createElement('div');
-    temp.innerHTML = text;
-    text = temp.textContent || temp.innerText || '';
+    // Replace </p> and </div> tags with line breaks
+    text = text.replace(/<\/p>/gi, '<br><br>');
+    text = text.replace(/<\/div>/gi, '<br>');
     
-    // Format tracklist: Add newlines before full timestamps (HH:MM:SS or MM:SS followed by artist name)
-    // Match HH:MM:SS pattern followed by a space and text
-    text = text.replace(/(\d{1,2}:\d{2}:\d{2}\s+\w)/g, '\n$1');
+    // Remove opening <p> and <div> tags (we keep the closing ones as line breaks)
+    text = text.replace(/<p[^>]*>/gi, '');
+    text = text.replace(/<div[^>]*>/gi, '');
     
-    // Clean up multiple newlines
-    text = text.replace(/\n{3,}/g, '\n\n');
+    // Make links open in new tab and add styling class
+    text = text.replace(/<a\s/gi, '<a target="_blank" rel="noopener noreferrer" class="desc-link" ');
+    
+    // Keep bold tags
+    // <strong> and <b> are already fine
+    
+    // Remove any other HTML tags except allowed ones (a, strong, b, em, i, br)
+    const allowedTags = ['a', 'strong', 'b', 'em', 'i', 'br'];
+    const tagRegex = /<\/?([a-z][a-z0-9]*)[^>]*>/gi;
+    text = text.replace(tagRegex, (match, tagName) => {
+        if (allowedTags.includes(tagName.toLowerCase())) {
+            return match;
+        }
+        return '';
+    });
+    
+    // Format tracklist: Add line breaks before full timestamps (HH:MM:SS followed by text)
+    text = text.replace(/(\d{1,2}:\d{2}:\d{2}\s+\w)/g, '<br>$1');
+    
+    // Clean up multiple line breaks
+    text = text.replace(/(<br\s*\/?>\s*){3,}/gi, '<br><br>');
+    
+    // Remove leading/trailing breaks
+    text = text.replace(/^(<br\s*\/?>)+/gi, '');
+    text = text.replace(/(<br\s*\/?>)+$/gi, '');
     
     return text.trim();
 }

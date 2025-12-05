@@ -217,7 +217,52 @@ async function loadPodcast(feedId) {
         // Update UI
         podcastCoverImg.src = image;
         podcastTitle.textContent = title;
-        podcastDescription.innerHTML = description;
+        
+        // Handle description with "show more" functionality
+        const descContainer = document.getElementById('podcast-description');
+        const maxLength = 300;
+        const descText = description;
+        
+        if (descText.replace(/<[^>]*>/g, '').length > maxLength) {
+            // Create truncated version (preserve word boundaries)
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = descText;
+            const plainText = tempDiv.textContent || tempDiv.innerText;
+            const truncated = plainText.substring(0, maxLength).trim();
+            const lastSpace = truncated.lastIndexOf(' ');
+            const finalTruncated = lastSpace > 0 ? truncated.substring(0, lastSpace) : truncated;
+            
+            descContainer.innerHTML = `
+                <span class="desc-content truncated">${finalTruncated}...</span>
+                <span class="desc-content full hidden">${descText}</span>
+                <button class="show-more-btn" id="show-more-desc">
+                    <span class="show-more-text">Show more</span>
+                    <span class="show-less-text hidden">Show less</span>
+                    <svg viewBox="0 0 24 24" width="16" height="16" class="chevron">
+                        <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/>
+                    </svg>
+                </button>
+            `;
+            
+            // Add click listener for show more button
+            const showMoreBtn = document.getElementById('show-more-desc');
+            showMoreBtn.addEventListener('click', () => {
+                const truncatedEl = descContainer.querySelector('.desc-content.truncated');
+                const fullEl = descContainer.querySelector('.desc-content.full');
+                const showMoreText = showMoreBtn.querySelector('.show-more-text');
+                const showLessText = showMoreBtn.querySelector('.show-less-text');
+                const chevron = showMoreBtn.querySelector('.chevron');
+                
+                truncatedEl.classList.toggle('hidden');
+                fullEl.classList.toggle('hidden');
+                showMoreText.classList.toggle('hidden');
+                showLessText.classList.toggle('hidden');
+                chevron.classList.toggle('rotated');
+            });
+        } else {
+            descContainer.innerHTML = descText;
+        }
+        
         episodeCount.textContent = `${currentEpisodes.length} episodes`;
         
         // Render external links
@@ -270,29 +315,62 @@ function renderExternalLinks() {
 
 // Render Episodes List
 function renderEpisodes() {
-    episodesList.innerHTML = currentEpisodes.map((episode, index) => `
-        <div class="episode-item ${currentEpisodeIndex === index ? 'playing' : ''}" data-index="${index}">
-            <div class="episode-header">
-                <div class="episode-cover">
-                    <img src="${episode.image}" alt="${episode.title}" loading="lazy">
+    episodesList.innerHTML = currentEpisodes.map((episode, index) => {
+        const maxLength = 300;
+        let descHTML = '';
+        
+        if (episode.description) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = episode.description;
+            const plainText = tempDiv.textContent || tempDiv.innerText;
+            
+            if (plainText.length > maxLength) {
+                const truncated = plainText.substring(0, maxLength).trim();
+                const lastSpace = truncated.lastIndexOf(' ');
+                const finalTruncated = lastSpace > 0 ? truncated.substring(0, lastSpace) : truncated;
+                
+                descHTML = `
+                    <div class="episode-description">
+                        <span class="desc-content truncated">${finalTruncated}...</span>
+                        <span class="desc-content full hidden">${episode.description}</span>
+                        <button class="show-more-btn episode-show-more" data-episode="${index}">
+                            <span class="show-more-text">Show more</span>
+                            <span class="show-less-text hidden">Show less</span>
+                            <svg viewBox="0 0 24 24" width="16" height="16" class="chevron">
+                                <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+            } else {
+                descHTML = `<div class="episode-description">${episode.description}</div>`;
+            }
+        }
+        
+        return `
+            <div class="episode-item ${currentEpisodeIndex === index ? 'playing' : ''}" data-index="${index}">
+                <div class="episode-header">
+                    <div class="episode-cover">
+                        <img src="${episode.image}" alt="${episode.title}" loading="lazy">
+                    </div>
+                    <div class="episode-info">
+                        <h3>${episode.title}</h3>
+                        <p class="episode-meta">
+                            <span>${episode.pubDate}</span>
+                            <span>${episode.duration}</span>
+                        </p>
+                    </div>
+                    <button class="episode-play-btn" data-index="${index}">
+                        ${currentEpisodeIndex === index && isPlaying ? 
+                            '<span class="pause-icon">❚❚</span>' : 
+                            '<span class="play-icon">▶</span>'
+                        }
+                    </button>
                 </div>
-                <div class="episode-info">
-                    <h3>${episode.title}</h3>
-                    <p class="episode-meta">
-                        <span>${episode.pubDate}</span>
-                        <span>${episode.duration}</span>
-                    </p>
-                </div>
-                <button class="episode-play-btn" data-index="${index}">
-                    ${currentEpisodeIndex === index && isPlaying ? 
-                        '<span class="pause-icon">❚❚</span>' : 
-                        '<span class="play-icon">▶</span>'
-                    }
-                </button>
+                ${descHTML}
             </div>
-            ${episode.description ? `<div class="episode-description">${episode.description}</div>` : ''}
-        </div>
-    `).join('');
+        `;
+    }).join('');
     
     // Add click listeners to episode items
     document.querySelectorAll('.episode-item').forEach(item => {
@@ -317,6 +395,25 @@ function renderEpisodes() {
             } else {
                 playEpisode(index);
             }
+        });
+    });
+    
+    // Add click listeners to episode show more buttons
+    document.querySelectorAll('.episode-show-more').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const episodeDesc = btn.closest('.episode-description');
+            const truncatedEl = episodeDesc.querySelector('.desc-content.truncated');
+            const fullEl = episodeDesc.querySelector('.desc-content.full');
+            const showMoreText = btn.querySelector('.show-more-text');
+            const showLessText = btn.querySelector('.show-less-text');
+            const chevron = btn.querySelector('.chevron');
+            
+            truncatedEl.classList.toggle('hidden');
+            fullEl.classList.toggle('hidden');
+            showMoreText.classList.toggle('hidden');
+            showLessText.classList.toggle('hidden');
+            chevron.classList.toggle('rotated');
         });
     });
 }

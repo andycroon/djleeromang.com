@@ -298,11 +298,41 @@ body {
     line-height: 1.2;
 }
 
-.podcast-info p {
+.podcast-info p,
+#podcast-description {
     color: var(--text-secondary);
     font-size: 1rem;
     line-height: 1.6;
     margin-bottom: 20px;
+}
+
+/* Show More Button */
+.show-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    color: var(--primary-color);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 5px 0;
+    margin-top: 8px;
+    transition: all 0.3s ease;
+}
+
+.show-more-btn:hover {
+    color: #ff5c7c;
+}
+
+.show-more-btn .chevron {
+    transition: transform 0.3s ease;
+}
+
+.show-more-btn .chevron.rotated {
+    transform: rotate(180deg);
 }
 
 .podcast-meta {

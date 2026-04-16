@@ -11,8 +11,7 @@ const FEEDS = {
 };
 
 // Server API endpoint (primary) with CORS proxy fallbacks
-// Disabled server proxy - using external proxies for now
-const USE_SERVER_PROXY = false;
+const USE_SERVER_PROXY = true;
 const CORS_PROXIES = [
     'https://api.allorigins.win/raw?url=',
     'https://corsproxy.io/?',
@@ -162,8 +161,30 @@ async function fetchFeed(feedId) {
 
 // Load Podcast Feed
 async function loadPodcast(feedId) {
+    // Check sessionStorage for previously parsed feed data
+    const cacheKey = `feed_parsed_${feedId}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+        try {
+            const { episodes, feed } = JSON.parse(cached);
+            currentEpisodes = episodes;
+            currentFeed = feed;
+            podcastCoverImg.src = feed.image;
+            podcastTitle.textContent = feed.title;
+            const descContainer = document.getElementById('podcast-description');
+            descContainer.innerHTML = feed.description;
+            episodeCount.textContent = `${currentEpisodes.length} episodes`;
+            renderExternalLinks();
+            renderEpisodes();
+            showPodcastPage();
+            return;
+        } catch (e) {
+            sessionStorage.removeItem(cacheKey); // corrupt cache, fetch fresh
+        }
+    }
+
     showLoading(true);
-    
+
     try {
         const feed = FEEDS[feedId];
         const xmlText = await fetchFeed(feedId);
@@ -267,10 +288,18 @@ async function loadPodcast(feedId) {
         
         // Render external links
         renderExternalLinks();
-        
+
+        // Cache parsed feed data in sessionStorage for instant re-visits
+        try {
+            sessionStorage.setItem(cacheKey, JSON.stringify({
+                episodes: currentEpisodes,
+                feed: currentFeed
+            }));
+        } catch (e) { /* storage full or private mode, skip caching */ }
+
         renderEpisodes();
         showPodcastPage();
-        
+
     } catch (error) {
         console.error('Error loading feed:', error);
         alert('Failed to load podcast feed. Please try again.');
@@ -418,29 +447,52 @@ function renderEpisodes() {
     });
 }
 
+// Lightweight play-state update — avoids full re-render on play/pause/close
+function updateEpisodePlayStateUI(prevIndex, newIndex, playing) {
+    if (prevIndex >= 0) {
+        const prevItem = episodesList.querySelector(`[data-index="${prevIndex}"]`);
+        if (prevItem) {
+            prevItem.classList.remove('playing');
+            const btn = prevItem.querySelector('.episode-play-btn');
+            if (btn) btn.innerHTML = '<span class="play-icon">▶</span>';
+        }
+    }
+    if (newIndex >= 0) {
+        const newItem = episodesList.querySelector(`[data-index="${newIndex}"]`);
+        if (newItem) {
+            newItem.classList.add('playing');
+            const btn = newItem.querySelector('.episode-play-btn');
+            if (btn) btn.innerHTML = playing
+                ? '<span class="pause-icon">❚❚</span>'
+                : '<span class="play-icon">▶</span>';
+        }
+    }
+}
+
 // Play Episode
 function playEpisode(index) {
     const episode = currentEpisodes[index];
     if (!episode || !episode.audioUrl) return;
-    
+
+    const prevIndex = currentEpisodeIndex;
     currentEpisodeIndex = index;
-    
+
     // Update player UI
     playerCover.src = episode.image;
     playerTitle.textContent = episode.title;
     playerPodcast.textContent = currentFeed.name;
-    
+
     // Load and play audio
     audioElement.src = episode.audioUrl;
     audioElement.play().catch(err => {
         console.error('Error playing audio:', err);
     });
-    
+
     // Show player
     audioPlayer.classList.remove('hidden');
-    
-    // Update episode list UI
-    renderEpisodes();
+
+    // Update episode list UI without full re-render
+    updateEpisodePlayStateUI(prevIndex, index, true);
 }
 
 // Toggle Play/Pause
@@ -466,8 +518,8 @@ function updatePlayState(playing) {
         pauseIcon.classList.add('hidden');
     }
     
-    // Update episode list buttons
-    renderEpisodes();
+    // Update episode list buttons without full re-render
+    updateEpisodePlayStateUI(currentEpisodeIndex, currentEpisodeIndex, playing);
 }
 
 // Progress Controls
@@ -520,8 +572,8 @@ function updateVolumeIcon() {
 function closePlayer() {
     audioElement.pause();
     audioPlayer.classList.add('hidden');
+    updateEpisodePlayStateUI(currentEpisodeIndex, -1, false);
     currentEpisodeIndex = -1;
-    renderEpisodes();
 }
 
 // Handle Episode End
